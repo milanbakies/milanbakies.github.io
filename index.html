@@ -50,6 +50,7 @@
   </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
   <a class="skip" href="#content">Skip to content</a>
@@ -64,27 +65,201 @@
   </header>
   <main id="content">
     <div class="frame">
-      <p class="kicker">DIGITAL ECOSYSTEM RISK &amp; RESILIENCE</p>
-      <h1>See what's happening.<br>Know what to do.</h1>
-      <p class="lead">When digital environments shift, I help organisations understand the actors, signals and risks that matter. I turn that insight into a practical response.</p>
-      <section aria-labelledby="questions">
-        <h2 id="questions" class="label">THE QUESTIONS I HELP ANSWER</h2>
-        <div class="questions">
-          <article class="question">
-            <h3>What is changing?</h3>
-            <p>Map the actors, narratives and emerging signals shaping your environment.</p>
-          </article>
-          <article class="question">
-            <h3>Where are we exposed?</h3>
-            <p>Assess risks around platforms, campaigns and critical events.</p>
-          </article>
-          <article class="question">
-            <h3>What should we do?</h3>
-            <p>Make decisions, strengthen controls and build a response that works under pressure.</p>
-          </article>
+      <div class="rail">
+      <div class="chooser" role="tablist" aria-label="Areas">
+        <button class="choice is-selected" type="button" role="tab" id="tab-ecosystem" data-area="ecosystem" aria-controls="panel-ecosystem" aria-selected="true">
+          <span class="choice-index">01</span>
+          <span class="choice-name">Digital Ecosystem &amp; Forensics</span>
+        </button>
+        <button class="choice" type="button" role="tab" id="tab-coaching" data-area="coaching" aria-controls="panel-coaching" aria-selected="false">
+          <span class="choice-index">02</span>
+          <span class="choice-name">Personal Coaching</span>
+        </button>
+        <button class="choice" type="button" role="tab" id="tab-strategy" data-area="strategy" aria-controls="panel-strategy" aria-selected="false">
+          <span class="choice-index">03</span>
+          <span class="choice-name">Business Transformation and Strategy</span>
+        </button>
+      </div>
+      <div class="pager" aria-hidden="true">
+        <span class="pager-dot is-on"></span>
+        <span class="pager-dot"></span>
+        <span class="pager-dot"></span>
+      </div>
+      </div>
+
+      <div class="stage">
+      <div class="track">
+      <div class="panel is-open" id="panel-ecosystem" data-panel="ecosystem" role="tabpanel" aria-labelledby="tab-ecosystem">
+        <div class="panel-clip">
+          <div class="panel-body">
+            <p class="kicker">DIGITAL ECOSYSTEM RISK &amp; RESILIENCE</p>
+            <h1>See what's happening.<br>Know what to do.</h1>
+            <p class="lead">When digital environments shift, I help organisations understand the actors, signals and risks that matter. I turn that insight into a practical response.</p>
+            <section aria-labelledby="questions">
+              <h2 id="questions" class="label">THE QUESTIONS I HELP ANSWER</h2>
+              <div class="questions">
+                <article class="question">
+                  <h3>What is changing?</h3>
+                  <p>Map the actors, narratives and emerging signals shaping your environment.</p>
+                </article>
+                <article class="question">
+                  <h3>Where are we exposed?</h3>
+                  <p>Assess risks around platforms, campaigns and critical events.</p>
+                </article>
+                <article class="question">
+                  <h3>What should we do?</h3>
+                  <p>Make decisions, strengthen controls and build a response that works under pressure.</p>
+                </article>
+              </div>
+            </section>
+            <p class="quiet">My background spans international platform operations, Trust &amp; Safety, digital forensics, risk analysis and operational leadership.</p>
+          </div>
         </div>
-      </section>
-      <p class="quiet">My background spans international platform operations, Trust &amp; Safety, digital forensics, risk analysis and operational leadership.</p>
+      </div>
+
+      <div class="panel" id="panel-coaching" data-panel="coaching" role="tabpanel" aria-labelledby="tab-coaching">
+        <div class="panel-clip">
+          <div class="panel-body">
+            <p class="kicker">LEADERSHIP COACHING &amp; SPARRING</p>
+            <h1 class="panel-title">Better leadership. Stronger teams. Clearer decisions.</h1>
+            <div class="copy">
+              <p>Leadership becomes more complex as responsibilities grow. Managing experienced professionals, developing other leaders, navigating organisational politics and balancing strategic priorities with operational demands require more than technical expertise.</p>
+              <p>I work with managers, heads of function, team leaders and senior specialists who want to strengthen their leadership effectiveness, develop their teams and navigate complex professional challenges.</p>
+              <p>Drawing on international leadership experience across distributed teams and demanding operational environments, I offer practical coaching, mentoring and independent sparring grounded in real management challenges.</p>
+            </div>
+            <h2 class="label">WHAT CAN I HELP YOU WITH?</h2>
+            <div class="asks">
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">I'm responsible for a department. How do I make it more effective?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>As a leader, your impact increasingly depends on how well your organisation operates rather than how much you personally deliver.</p><p>We examine how responsibilities are distributed, how decisions are made, how performance is managed and where your attention creates the greatest value. The objective is to build a department that performs consistently without depending on your involvement in every decision.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">I manage other managers. How do I develop their leadership capabilities?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Leading managers requires a different approach from managing individual contributors. You need to establish expectations, create accountability and develop people who can independently lead their own teams.</p><p>I help you examine your leadership structure, strengthen coaching and performance routines, and develop managers who can take ownership of decisions, people development and operational results.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">My team is performing, but I know we could be operating at a higher level.<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Good performance can hide structural weaknesses: unclear priorities, inconsistent management practices, underdeveloped talent or too much reliance on a few key individuals.</p><p>Together, we identify where leadership practices, capability development and ways of working can improve. The focus is on strengthening the team as a system, not simply pushing individuals to work harder.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">I'm facing a complex decision and need an independent perspective.<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Senior leadership often involves decisions without obvious answers. Competing stakeholder interests, organisational constraints and incomplete information make it difficult to evaluate options objectively.</p><p>I act as a sparring partner to help you structure the problem, challenge assumptions, consider consequences and develop a clear course of action. You retain ownership of the decision while benefiting from an experienced external perspective.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">How do I influence decisions across departments and senior stakeholders?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Many leadership challenges extend beyond your formal authority. You may need to align functions with different priorities, negotiate resources, address resistance or secure support for organisational changes.</p><p>We work on stakeholder dynamics, communication, influencing without authority and building the alignment needed to move decisions into execution.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">How do I develop a stronger leadership pipeline?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Organisations become vulnerable when expertise, decisions or leadership capability are concentrated in too few individuals.</p><p>I help leaders establish practical approaches to identifying potential, developing specialists and emerging managers, creating meaningful stretch opportunities and preparing people for greater responsibility.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">I'm successful in my role, but how do I grow into the next level of leadership?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Moving into broader leadership responsibility requires a shift in perspective: from managing tasks to managing systems, from solving problems yourself to building organisational capability, and from operational decisions to strategic trade-offs.</p><p>We work on expanding your leadership perspective, strengthening decision-making and developing the management practices needed for larger and more complex responsibilities.</p></div></div>
+              </div>
+            </div>
+            <h2 class="label">HOW I WORK WITH YOU</h2>
+            <div class="modes modes-4">
+              <article class="question">
+                <h3>Leadership Sparring</h3>
+                <p>Independent, structured discussions around difficult decisions, organisational challenges, stakeholder situations and leadership priorities.</p>
+              </article>
+              <article class="question">
+                <h3>Management Coaching</h3>
+                <p>Individual development focused on leadership effectiveness, decision-making, delegation, performance management and leading through complexity.</p>
+              </article>
+              <article class="question">
+                <h3>Leadership &amp; Talent Development</h3>
+                <p>Practical support for managers who want to develop their teams, strengthen leadership capabilities and establish sustainable development practices.</p>
+              </article>
+              <article class="question">
+                <h3>Professional Mentoring</h3>
+                <p>Experience-based guidance for specialists and leaders navigating new responsibilities, career transitions or increasingly complex roles.</p>
+              </article>
+            </div>
+            <h2 class="label">THE OUTCOME</h2>
+            <div class="outcome">
+              <p>More effective leadership, stronger management teams, clearer accountability and greater confidence in navigating complex decisions.</p>
+              <p>The objective is not to teach a particular leadership philosophy. It's to help you develop the judgement, structures and practices that make you and the people around you more effective.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-strategy" data-panel="strategy" role="tabpanel" aria-labelledby="tab-strategy">
+        <div class="panel-clip">
+          <div class="panel-body">
+            <p class="kicker">BUSINESS TRANSFORMATION &amp; STRATEGY</p>
+            <h1 class="panel-title">From strategic ambition to operational performance.</h1>
+            <div class="copy">
+              <p>Organisations rarely struggle because they lack objectives. More often, the challenge lies in how strategy translates into structures, responsibilities, decisions and everyday execution.</p>
+              <p>I work with leaders and organisations to identify operational and organisational constraints, improve how functions work together and build the operating models needed to deliver strategic priorities.</p>
+              <p>My approach combines international operational leadership, organisational governance, Lean Six Sigma and practical transformation experience.</p>
+            </div>
+            <h2 class="label">WHAT CAN I HELP YOU SOLVE?</h2>
+            <div class="asks">
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">Is our organisation structured to deliver our strategy?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>As priorities evolve, existing departmental structures, responsibilities and decision-making processes may no longer support what the organisation needs to achieve.</p><p>I help assess organisational design, functional responsibilities, reporting and decision structures, and cross-functional dependencies. The aim is to establish an operating model that connects organisational capabilities with strategic objectives.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">Why aren't our strategic priorities translating into measurable results?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>A clear strategy can still fail when ownership is fragmented, priorities compete and execution lacks a consistent management framework.</p><p>I help translate strategic direction into operational priorities, accountable ownership, performance measures and execution routines. This makes it easier for leadership to see progress, identify obstacles and make informed trade-offs.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">How can we improve performance across multiple teams or functions?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Optimising individual teams doesn't necessarily improve overall organisational performance. Bottlenecks, duplicated effort and conflicting priorities often emerge between functions.</p><p>I help examine end-to-end workflows, resource allocation, performance management and cross-functional coordination to identify improvements that benefit the wider organisation.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">Our organisation has become too complex. How do we simplify it without losing control?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Growth, new requirements and repeated organisational changes often create additional processes, governance layers and reporting obligations.</p><p>Using Lean Six Sigma and structured analysis, I help distinguish necessary controls from unnecessary complexity, identify root causes and redesign processes around clear ownership, operational efficiency and measurable outcomes.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">How do we establish better accountability and decision-making?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Unclear responsibilities and decision rights can slow execution, create unnecessary escalations and leave important risks unresolved.</p><p>I help develop practical governance structures, clarify ownership, define decision and escalation mechanisms, and establish management routines that improve transparency and accountability.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">We're planning a transformation. How do we make sure it actually works?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Transformation requires more than a target operating model or implementation roadmap. New structures and processes must work within the realities of the organisation and gain the support of the people responsible for delivering them.</p><p>I help connect organisational design with implementation, stakeholder alignment, capability development, adoption measurement and continuous improvement.</p></div></div>
+              </div>
+              <div class="ask">
+                <button class="ask-q" type="button" aria-expanded="false">How can we make better use of our people, capacity and resources?<span class="ask-mark" aria-hidden="true"></span></button>
+                <div class="ask-a"><div class="ask-clip"><p>Limited capacity, competing priorities and fragmented workload visibility can prevent teams from delivering their most important work.</p><p>I help establish clearer prioritisation, capacity planning, operational performance indicators and resource allocation practices, enabling leaders to focus effort where it creates the greatest value.</p></div></div>
+              </div>
+            </div>
+            <h2 class="label">HOW I WORK WITH YOUR ORGANISATION</h2>
+            <div class="modes modes-5">
+              <article class="question">
+                <h3>Organisational &amp; Operating Model Design</h3>
+                <p>Assessing and improving departmental structures, responsibilities, decision-making and cross-functional operating models.</p>
+              </article>
+              <article class="question">
+                <h3>Strategy-to-Execution</h3>
+                <p>Connecting strategic priorities with operational objectives, ownership, management frameworks and measurable delivery.</p>
+              </article>
+              <article class="question">
+                <h3>Operational Excellence</h3>
+                <p>Applying Lean Six Sigma, process improvement and structured problem-solving to improve performance and reduce unnecessary complexity.</p>
+              </article>
+              <article class="question">
+                <h3>Governance &amp; Performance Management</h3>
+                <p>Strengthening accountability, decision rights, operational controls, performance indicators and management routines.</p>
+              </article>
+              <article class="question">
+                <h3>Transformation &amp; Implementation</h3>
+                <p>Supporting the transition from organisational design to operational adoption, sustainable working practices and continuous improvement.</p>
+              </article>
+            </div>
+            <h2 class="label">THE OUTCOME</h2>
+            <div class="outcome">
+              <p>Clearer organisational structures, stronger accountability, more effective operations and a better connection between strategic direction and measurable performance.</p>
+              <p>The objective is not to create another transformation programme. It's to help organisations build the capabilities and operating systems needed to deliver results consistently.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      </div>
     </div>
   </main>
   <section class="contact">
@@ -101,5 +276,6 @@
       </nav>
     </div>
   </footer>
+  <script src="site.js"></script>
 </body>
 </html>

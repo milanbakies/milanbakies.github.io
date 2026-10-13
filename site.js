@@ -1,3 +1,4 @@
+/* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
 (function () {
   var chooser = document.querySelector(".chooser");
   var stage = document.querySelector(".stage");

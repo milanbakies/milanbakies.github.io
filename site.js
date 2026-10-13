@@ -125,19 +125,6 @@
     });
   });
 
-  var letter = document.querySelector(".letter");
-  if (letter) {
-    letter.addEventListener("submit", function (event) {
-      event.preventDefault();
-      var data = new FormData(letter);
-      var name = String(data.get("name") || "").replace(/\s+/g, " ").trim();
-      var email = String(data.get("email") || "").trim();
-      var message = String(data.get("message") || "").trim();
-      var body = "Name: " + name + "\nEmail: " + email + "\n\n" + message;
-      window.location.href = "mailto:milanbakies@gmail.com?subject=" + encodeURIComponent("Note from " + name) + "&body=" + encodeURIComponent(body);
-    });
-  }
-
   window.requestAnimationFrame(function () {
     window.requestAnimationFrame(function () {
       document.documentElement.classList.add("is-ready");

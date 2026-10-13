@@ -171,9 +171,25 @@
       </div>
     </div>
   </main>
-  <section class="contact">
+  <section class="contact" id="contact">
     <div class="frame">
       <p>Have a complex digital challenge?</p>
+      <form class="letter" action="mailto:milanbakies@gmail.com" method="post" enctype="text/plain">
+        <label>
+          <span>Name</span>
+          <input name="name" type="text" autocomplete="name" required maxlength="120">
+        </label>
+        <label>
+          <span>Email</span>
+          <input name="email" type="email" autocomplete="email" required maxlength="160">
+        </label>
+        <label>
+          <span>Message</span>
+          <textarea name="message" required maxlength="4000" rows="5"></textarea>
+        </label>
+        <button type="submit">Open in your mail app</button>
+        <p class="letter-note">The note stays in your mail app. This page does not send or store it.</p>
+      </form>
       <a class="mail" href="mailto:milanbakies@gmail.com">milanbakies@gmail.com</a>
     </div>
   </section>

@@ -577,6 +577,7 @@ footer {
 .ask-a {
   display: grid;
   grid-template-rows: 1fr;
+  overflow: hidden;
 }
 
 .js .ask-a {
@@ -591,7 +592,10 @@ footer {
 .ask-clip {
   min-height: 0;
   overflow: hidden;
-  padding-bottom: 0.45rem;
+}
+
+.ask-inner {
+  padding: 0 0.15rem 1.2rem;
 }
 
 .ask-a p {
@@ -600,20 +604,8 @@ footer {
   color: #d7e3e0;
 }
 
-.modes {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.85rem;
-}
-
-.outcome p {
-  max-width: 40rem;
-  margin: 0 0 1rem;
-}
-
-.outcome p:last-child {
+.ask-a p:last-child {
   margin-bottom: 0;
-  color: var(--quiet);
 }
 
 @media (min-width: 800px) {
@@ -635,11 +627,6 @@ footer {
 
   .pager {
     display: none;
-  }
-
-  .modes.modes-4,
-  .modes.modes-5 {
-    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -671,6 +658,14 @@ footer {
 
   .pager {
     display: none;
+  }
+
+  .ask-a {
+    grid-template-rows: 1fr !important;
+  }
+
+  .ask-clip {
+    overflow: visible;
   }
 
   body {

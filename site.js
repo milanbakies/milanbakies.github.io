@@ -1,11 +1,4 @@
 /* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
-var PING_PERIOD = 22000;
-var PING_SWEEP = 0.62;
-var INTRO_SWEEP = 3400;
-var INTRO_GAP = 600;
-var PAGE_PING = INTRO_SWEEP + INTRO_GAP;
-var FADE_DUR = 2200;
-
 (function () {
   var chooser = document.querySelector(".chooser");
   var stage = document.querySelector(".stage");
@@ -140,199 +133,17 @@ var FADE_DUR = 2200;
     });
   });
 
-  if (!reduce && document.querySelector("main")) {
-    startIntro();
-    startRadar();
-  }
+  if (!reduce && document.querySelector("main")) startRadar();
 })();
-
-function pingEase(u) {
-  return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
-}
-
-function pingGlide(u) {
-  var s = Math.sin(u * Math.PI);
-  return s * s * (3 - 2 * s);
-}
-
-function pingState(elapsed) {
-  var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
-  if (elapsed < INTRO_SWEEP) {
-    var u0 = elapsed / INTRO_SWEEP;
-    return { n: 0, radius: pingEase(u0) * reach, alpha: Math.sin(u0 * Math.PI) * 0.75, u: u0, reach: reach };
-  }
-  if (elapsed < PAGE_PING) return { n: 0, radius: 0, alpha: 0, u: 1, reach: reach };
-  var pageElapsed = elapsed - PAGE_PING;
-  var n = Math.floor(pageElapsed / PING_PERIOD);
-  var t = (pageElapsed % PING_PERIOD) / PING_PERIOD;
-  var u = Math.min(t / PING_SWEEP, 1);
-  var alpha = t < PING_SWEEP ? Math.sin(u * Math.PI) * 0.75 : 0;
-  return { n: n + 1, radius: pingEase(u) * reach, alpha: alpha, u: u, reach: reach };
-}
-
-function pingClock(now) {
-  if (!window.__pingT0) window.__pingT0 = now;
-  return now - window.__pingT0;
-}
-
-function startIntro() {
-  var veil = document.querySelector(".intro");
-  var line = veil && veil.querySelector(".intro-line");
-  if (!veil || !line || !document.querySelector(".stage")) return;
-
-  var bg = document.createElement("div");
-  bg.className = "intro-bg";
-  veil.insertBefore(bg, veil.firstChild);
-  veil.style.background = "transparent";
-
-  var text = line.textContent;
-  line.textContent = "";
-  line.classList.add("is-split");
-  var chars = [];
-  text.split(/(\s+)/).forEach(function (part) {
-    if (!part) return;
-    if (/^\s+$/.test(part)) {
-      line.appendChild(document.createTextNode(" "));
-      return;
-    }
-    var word = document.createElement("span");
-    word.className = "intro-word";
-    for (var i = 0; i < part.length; i++) {
-      var ch = document.createElement("span");
-      ch.className = "intro-ch";
-      ch.textContent = part.charAt(i);
-      word.appendChild(ch);
-      chars.push(ch);
-    }
-    line.appendChild(word);
-  });
-
-  var held = [];
-  Array.prototype.forEach.call(document.body.children, function (el) {
-    if (el === veil || el.classList.contains("radar")) return;
-    if (el.hasAttribute("inert")) return;
-    el.setAttribute("inert", "");
-    held.push(el);
-  });
-
-  var fields = [];
-  var fieldsReady = false;
-
-  function readyFields() {
-    if (fieldsReady) return;
-    fieldsReady = true;
-    var still = document.querySelector(".panel.is-open .panel-title");
-    var height = window.innerHeight;
-    document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
-      if (still && (el === still || still.contains(el))) return;
-      var rect = el.getBoundingClientRect();
-      if (rect.width < 2 && rect.height < 2) return;
-      var cx = rect.left + rect.width / 2;
-      var cy = rect.top + rect.height / 2;
-      var dx = cx;
-      var dy = cy - height;
-      var len = Math.hypot(dx, dy) || 1;
-      fields.push({
-        el: el,
-        dist: len,
-        amp: 2.4
-      });
-    });
-  }
-
-  var opened = false;
-  var done = false;
-
-  function settle() {
-    fields.forEach(function (field) {
-      field.el.style.transform = "";
-    });
-  }
-
-  function openPage() {
-    if (opened) return;
-    opened = true;
-    var canvas = document.querySelector(".radar");
-    if (canvas) document.body.prepend(canvas);
-    veil.remove();
-    held.forEach(function (el) { el.removeAttribute("inert"); });
-  }
-
-  function finish() {
-    if (done) return;
-    done = true;
-    openPage();
-    settle();
-  }
-
-  window.addEventListener("keydown", onKey);
-
-  function onKey(event) {
-    if (opened || done) {
-      window.removeEventListener("keydown", onKey);
-      return;
-    }
-    if (event.key === "Escape") finish();
-  }
-
-  function frame(now) {
-    if (done) return;
-    var elapsed = pingClock(now);
-    var rise = Math.max(0, Math.min(1, elapsed / 900));
-    var p = elapsed <= PAGE_PING ? 0 : Math.max(0, Math.min(1, (elapsed - PAGE_PING) / FADE_DUR));
-    var veilFade = 1 - pingEase(p);
-    var state = pingState(elapsed);
-
-    if (!opened) {
-      chars.forEach(function (ch, index) {
-        var wave = 0.5 + 0.5 * Math.sin((elapsed / 4200) * Math.PI * 2 - index * 0.22);
-        var breath = 0.9 + 0.1 * wave;
-        ch.style.opacity = String(rise * breath * veilFade);
-        ch.style.color = "#f3f0e8";
-        ch.style.textShadow = "0 0 " + (3 + wave * 2).toFixed(1) + "px rgba(243, 240, 232, " + (0.14 + wave * 0.08).toFixed(2) + "), 0 0 " + (8 + wave * 4).toFixed(1) + "px rgba(210, 255, 74, " + (0.08 + wave * 0.07).toFixed(2) + ")";
-        ch.style.transform = "";
-      });
-      bg.style.opacity = String(veilFade);
-      if (p >= 1) {
-        openPage();
-        window.removeEventListener("keydown", onKey);
-      }
-    }
-
-    if (elapsed > 400) readyFields();
-    var sweepMs = PING_PERIOD * PING_SWEEP;
-    var edge = Math.min(state.u, 1 - state.u);
-    var speed = (4 * Math.max(edge, 0.18)) * state.reach / sweepMs;
-    var carry = Math.max(64, speed * 1100);
-    fields.forEach(function (field) {
-      var passed = state.n < 1 ? -1 : state.radius - field.dist;
-      var lift = 0;
-      if (passed >= 0 && passed < carry) lift = pingGlide(passed / carry);
-      var x = lift * field.amp;
-      var y = lift * field.amp * -0.35;
-      field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
-    });
-
-    if (elapsed > PAGE_PING + sweepMs + 1200) {
-      done = true;
-      if (!opened) openPage();
-      settle();
-      return;
-    }
-    window.requestAnimationFrame(frame);
-  }
-
-  window.requestAnimationFrame(frame);
-}
 
 function startRadar() {
   var canvas = document.createElement("canvas");
   canvas.className = "radar";
   canvas.setAttribute("aria-hidden", "true");
-  var veil = document.querySelector(".intro");
-  if (veil) veil.insertBefore(canvas, veil.firstChild);
-  else document.body.prepend(canvas);
+  document.body.prepend(canvas);
   var ctx = canvas.getContext("2d");
+  var period = 22000;
+  var sweep = 0.62;
   var cycle = -1;
   var target = null;
   var lit = false;
@@ -453,10 +264,13 @@ function startRadar() {
   }
 
   function frame(now) {
-    var state = pingState(pingClock(now));
-    var n = state.n;
-    var radius = state.radius;
-    var alpha = state.alpha;
+    var n = Math.floor(now / period);
+    var t = (now % period) / period;
+    var u = Math.min(t / sweep, 1);
+    var eased = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
+    var radius = eased * reach;
+    var alpha = t < sweep ? Math.sin(u * Math.PI) * 0.75 : 0;
     if (n !== cycle) {
       cycle = n;
       lit = false;

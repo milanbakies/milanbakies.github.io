@@ -41,76 +41,6 @@ body > footer {
   pointer-events: none;
 }
 
-.intro .radar {
-  position: absolute;
-  z-index: 1;
-}
-
-.intro {
-  display: none;
-}
-
-.js .intro {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 40;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 12vh 1.6rem;
-  background: transparent;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.intro-bg {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 0;
-  background: #07131c;
-}
-
-.intro-line {
-  position: relative;
-  z-index: 2;
-  max-width: 11em;
-  margin: 0;
-  color: var(--ink);
-  font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  font-size: clamp(2.15rem, 1.15rem + 3.4vw, 4.2rem);
-  font-weight: 400;
-  font-style: normal;
-  line-height: 1.12;
-  letter-spacing: 0.01em;
-  text-align: center;
-  text-wrap: balance;
-}
-
-.js .intro-line:not(.is-split) {
-  opacity: 0;
-}
-
-.intro-word {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.intro-ch {
-  display: inline-block;
-  font-style: normal;
-  color: var(--ink);
-  text-shadow: 0 0 4px rgba(243, 240, 232, 0.18), 0 0 10px rgba(210, 255, 74, 0.14);
-  will-change: transform, opacity;
-}
-
 .ping-word {
   display: inline;
   color: inherit;
@@ -791,7 +721,6 @@ footer {
     box-shadow: none;
   }
 
-  .js .intro,
   .radar {
     display: none;
   }
@@ -833,7 +762,6 @@ footer {
     box-shadow: none;
   }
 
-  .js .intro,
   .radar {
     display: none;
   }

@@ -41,6 +41,47 @@ body > footer {
   pointer-events: none;
 }
 
+.intro {
+  display: none;
+}
+
+.js .intro {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: clamp(1.5rem, 6vw, 3rem);
+  background: #000;
+  pointer-events: auto;
+}
+
+.intro-line {
+  max-width: 8.2em;
+  margin: 0;
+  color: var(--ink);
+  font-family: Didot, "Bodoni 72", "Bodoni MT", "Hoefler Text", Palatino, Georgia, serif;
+  font-size: clamp(2.2rem, 1.15rem + 4vw, 4.6rem);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.12;
+  letter-spacing: 0.045em;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.js .intro-line:not(.is-split) {
+  opacity: 0;
+}
+
+.intro-ch {
+  display: inline-block;
+  font-style: normal;
+  white-space: pre;
+  will-change: transform, opacity;
+}
+
 .ping-word {
   display: inline;
   color: inherit;
@@ -721,6 +762,7 @@ footer {
     box-shadow: none;
   }
 
+  .js .intro,
   .radar {
     display: none;
   }
@@ -762,6 +804,7 @@ footer {
     box-shadow: none;
   }
 
+  .js .intro,
   .radar {
     display: none;
   }

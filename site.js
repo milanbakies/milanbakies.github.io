@@ -133,8 +133,154 @@
     });
   });
 
-  if (!reduce && document.querySelector("main")) startRadar();
+  if (!reduce && document.querySelector("main")) {
+    startIntro();
+    startRadar();
+  }
 })();
+
+var PING_PERIOD = 22000;
+var PING_SWEEP = 0.62;
+
+function pingEase(u) {
+  return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+}
+
+function startIntro() {
+  var veil = document.querySelector(".intro");
+  var line = veil && veil.querySelector(".intro-line");
+  if (!veil || !line || !document.querySelector(".stage")) return;
+
+  var text = line.textContent;
+  line.textContent = "";
+  line.classList.add("is-split");
+  var chars = [];
+  for (var i = 0; i < text.length; i++) {
+    var ch = document.createElement("span");
+    ch.className = "intro-ch";
+    ch.textContent = text.charAt(i);
+    line.appendChild(ch);
+    chars.push(ch);
+  }
+
+  var held = [];
+  Array.prototype.forEach.call(document.body.children, function (el) {
+    if (el === veil || el.classList.contains("radar")) return;
+    if (el.hasAttribute("inert")) return;
+    el.setAttribute("inert", "");
+    held.push(el);
+  });
+
+  var fields = [];
+  var anchor = document.querySelector(".panel.is-open .panel-title");
+  if (anchor) {
+    var box = anchor.getBoundingClientRect();
+    var ax = box.left + box.width / 2;
+    var ay = box.top + box.height / 2;
+    document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .panel-title, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.width < 2 && rect.height < 2) return;
+      var dist = Math.hypot(rect.left + rect.width / 2 - ax, rect.top + rect.height / 2 - ay);
+      fields.push({
+        el: el,
+        amp: 1.5 + Math.min(8.5, dist / 120),
+        delay: Math.min(420, dist * 0.55)
+      });
+    });
+  }
+
+  var HOLD_END = 2000;
+  var OUT_END = 3700;
+  var opened = false;
+  var done = false;
+  var started = 0;
+
+  function settle() {
+    fields.forEach(function (field) {
+      field.el.style.transform = "";
+    });
+  }
+
+  function openPage() {
+    if (opened) return;
+    opened = true;
+    veil.remove();
+    held.forEach(function (el) { el.removeAttribute("inert"); });
+  }
+
+  function finish() {
+    if (done) return;
+    done = true;
+    openPage();
+    settle();
+  }
+
+  veil.addEventListener("click", finish);
+  window.addEventListener("keydown", onKey);
+
+  function onKey(event) {
+    if (opened || done) {
+      window.removeEventListener("keydown", onKey);
+      return;
+    }
+    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      finish();
+    }
+  }
+
+  function frame(now) {
+    if (done) return;
+    if (!started) started = now;
+    var elapsed = now - started;
+
+    if (!opened) {
+      chars.forEach(function (ch, index) {
+        var x = 0;
+        var opacity = 1;
+        if (elapsed < HOLD_END) {
+          var risen = Math.max(0, Math.min(1, (elapsed - index * 26) / 680));
+          var easeIn = pingEase(risen);
+          opacity = easeIn;
+          x = (1 - easeIn) * 14;
+        } else {
+          var blown = Math.max(0, Math.min(1, (elapsed - HOLD_END - index * 18) / 860));
+          var easeOut = pingEase(blown);
+          opacity = 1 - easeOut;
+          x = -easeOut * (34 + index * 0.45);
+        }
+        ch.style.opacity = String(opacity);
+        ch.style.transform = "translate3d(" + x.toFixed(2) + "px, 0, 0)";
+      });
+      var veilU = elapsed <= HOLD_END ? 0 : Math.max(0, Math.min(1, (elapsed - HOLD_END) / (OUT_END - HOLD_END)));
+      veil.style.opacity = String(1 - pingEase(veilU));
+      if (elapsed >= OUT_END) {
+        openPage();
+        window.removeEventListener("keydown", onKey);
+      }
+    }
+
+    var windDone = true;
+    fields.forEach(function (field) {
+      var start = HOLD_END + field.delay * 0.4;
+      var u = Math.max(0, Math.min(1, (elapsed - start) / 2800));
+      var back0 = pingEase(0.5);
+      var back = (pingEase(0.5 + u * 0.5) - back0) / (1 - back0);
+      if (back < 1) windDone = false;
+      var x = -field.amp * (1 - back);
+      field.el.style.transform = "translate3d(" + x.toFixed(2) + "px, " + (x * -0.14).toFixed(2) + "px, 0)";
+    });
+
+    if (opened && windDone) {
+      done = true;
+      settle();
+      return;
+    }
+    window.requestAnimationFrame(frame);
+  }
+
+  window.requestAnimationFrame(frame);
+}
 
 function startRadar() {
   var canvas = document.createElement("canvas");
@@ -142,8 +288,9 @@ function startRadar() {
   canvas.setAttribute("aria-hidden", "true");
   document.body.prepend(canvas);
   var ctx = canvas.getContext("2d");
-  var period = 22000;
-  var sweep = 0.62;
+  var period = PING_PERIOD;
+  var sweep = PING_SWEEP;
+  var started = 0;
   var cycle = -1;
   var target = null;
   var lit = false;
@@ -264,10 +411,12 @@ function startRadar() {
   }
 
   function frame(now) {
-    var n = Math.floor(now / period);
-    var t = (now % period) / period;
+    if (!started) started = now;
+    var elapsed = now - started;
+    var n = Math.floor(elapsed / period);
+    var t = (elapsed % period) / period;
     var u = Math.min(t / sweep, 1);
-    var eased = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    var eased = pingEase(u);
     var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
     var radius = eased * reach;
     var alpha = t < sweep ? Math.sin(u * Math.PI) * 0.75 : 0;

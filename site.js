@@ -260,7 +260,7 @@ function startIntro() {
         var breath = 0.86 + 0.14 * wave;
         ch.style.opacity = String(rise * breath);
         ch.style.color = "#d2ff4a";
-        ch.style.textShadow = "0 0 " + (6 + wave * 8).toFixed(1) + "px rgba(210, 255, 74, " + (0.55 + wave * 0.4).toFixed(2) + "), 0 0 " + (16 + wave * 14).toFixed(1) + "px rgba(210, 255, 74, " + (0.18 + wave * 0.22).toFixed(2) + ")";
+        ch.style.textShadow = "0 0 " + (4 + wave * 4).toFixed(1) + "px rgba(243, 240, 232, " + (0.2 + wave * 0.14).toFixed(2) + "), 0 0 " + (10 + wave * 7).toFixed(1) + "px rgba(210, 255, 74, " + (0.2 + wave * 0.16).toFixed(2) + ")";
         ch.style.transform = "translate3d(" + (-swoosh * 4).toFixed(2) + "px, " + (swoosh * -1).toFixed(2) + "px, 0)";
       });
       veil.style.opacity = String(1 - pingEase(p));
@@ -276,11 +276,18 @@ function startIntro() {
     var sweepMs = PING_PERIOD * PING_SWEEP;
     var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
     var radius = pingEase(pingU) * reach;
-    var tail = 14;
+    var edge = Math.min(pingU, 1 - pingU);
+    var speed = (4 * Math.max(edge, 0.15)) * reach / sweepMs;
+    var carry = Math.max(48, speed * 780);
     fields.forEach(function (field) {
       var passed = radius - field.dist;
       var lift = 0;
-      if (passed >= 0 && passed < tail) lift = Math.cos((passed / tail) * Math.PI * 0.5);
+      if (passed >= 0 && passed < carry) {
+        var u = passed / carry;
+        if (u < 0.34) lift = Math.sin((u / 0.34) * Math.PI * 0.5);
+        else if (u < 0.6) lift = 1;
+        else lift = Math.cos(((u - 0.6) / 0.4) * Math.PI * 0.5);
+      }
       var x = lift * field.amp;
       var y = lift * field.amp * -0.35;
       field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";

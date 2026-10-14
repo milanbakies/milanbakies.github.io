@@ -47,18 +47,24 @@ body > footer {
 
 .js .intro {
   position: fixed;
-  inset: 0;
-  z-index: 5;
-  display: grid;
-  place-items: center;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   margin: 0;
-  padding: clamp(1.5rem, 6vw, 3rem);
+  padding: 12vh 1.6rem;
   background: #000;
+  overflow: hidden;
   pointer-events: auto;
 }
 
 .intro-line {
-  max-width: 8.2em;
+  max-width: 10em;
   margin: 0;
   color: var(--ink);
   font-family: Didot, "Bodoni 72", "Bodoni MT", "Hoefler Text", Palatino, Georgia, serif;
@@ -75,10 +81,14 @@ body > footer {
   opacity: 0;
 }
 
+.intro-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .intro-ch {
   display: inline-block;
   font-style: normal;
-  white-space: pre;
   will-change: transform, opacity;
 }
 

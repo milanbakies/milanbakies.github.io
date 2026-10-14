@@ -146,6 +146,17 @@ function pingEase(u) {
   return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
 }
 
+function pingClock(now) {
+  if (!window.__pingT0) window.__pingT0 = now;
+  return now - window.__pingT0;
+}
+
+function timeForRadius(dist, reach) {
+  var d = Math.max(0, Math.min(0.999, dist / reach));
+  var u = d <= 0.5 ? Math.sqrt(d / 2) : 1 - Math.sqrt((1 - d) / 2);
+  return u * PING_PERIOD * PING_SWEEP;
+}
+
 function startIntro() {
   var veil = document.querySelector(".intro");
   var line = veil && veil.querySelector(".intro-line");
@@ -155,13 +166,23 @@ function startIntro() {
   line.textContent = "";
   line.classList.add("is-split");
   var chars = [];
-  for (var i = 0; i < text.length; i++) {
-    var ch = document.createElement("span");
-    ch.className = "intro-ch";
-    ch.textContent = text.charAt(i);
-    line.appendChild(ch);
-    chars.push(ch);
-  }
+  text.split(/(\s+)/).forEach(function (part) {
+    if (!part) return;
+    if (/^\s+$/.test(part)) {
+      line.appendChild(document.createTextNode(" "));
+      return;
+    }
+    var word = document.createElement("span");
+    word.className = "intro-word";
+    for (var i = 0; i < part.length; i++) {
+      var ch = document.createElement("span");
+      ch.className = "intro-ch";
+      ch.textContent = part.charAt(i);
+      word.appendChild(ch);
+      chars.push(ch);
+    }
+    line.appendChild(word);
+  });
 
   var held = [];
   Array.prototype.forEach.call(document.body.children, function (el) {
@@ -171,6 +192,8 @@ function startIntro() {
     held.push(el);
   });
 
+  var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
+  var originY = window.innerHeight;
   var fields = [];
   var anchor = document.querySelector(".panel.is-open .panel-title");
   if (anchor) {
@@ -180,20 +203,24 @@ function startIntro() {
     document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .panel-title, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
       var rect = el.getBoundingClientRect();
       if (rect.width < 2 && rect.height < 2) return;
-      var dist = Math.hypot(rect.left + rect.width / 2 - ax, rect.top + rect.height / 2 - ay);
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      var fromPing = Math.hypot(cx, originY - cy);
+      var fromTitle = Math.hypot(cx - ax, cy - ay);
       fields.push({
         el: el,
-        amp: 1.5 + Math.min(8.5, dist / 120),
-        delay: Math.min(420, dist * 0.55)
+        amp: 2.2 + Math.min(9, fromTitle / 110),
+        hit: timeForRadius(fromPing, reach)
       });
     });
   }
 
-  var HOLD_END = 2000;
-  var OUT_END = 3700;
+  var titleDist = Math.hypot(window.innerWidth * 0.5, window.innerHeight * 0.5);
+  var arrive = timeForRadius(titleDist, reach);
+  var fadeStart = Math.max(2400, arrive - 800);
+  var fadeEnd = fadeStart + 1700;
   var opened = false;
   var done = false;
-  var started = 0;
 
   function settle() {
     fields.forEach(function (field) {
@@ -223,52 +250,43 @@ function startIntro() {
       window.removeEventListener("keydown", onKey);
       return;
     }
-    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      finish();
-    }
+    if (event.key === "Escape") finish();
+  }
+
+  function gust(elapsed, hit) {
+    var span = 980;
+    var delta = elapsed - hit;
+    if (delta < -span || delta > span) return 0;
+    if (delta < 0) return Math.sin((1 + delta / span) * Math.PI * 0.5);
+    return Math.cos((delta / span) * Math.PI * 0.5);
   }
 
   function frame(now) {
     if (done) return;
-    if (!started) started = now;
-    var elapsed = now - started;
+    var elapsed = pingClock(now);
+    var rise = Math.max(0, Math.min(1, elapsed / 900));
 
     if (!opened) {
       chars.forEach(function (ch, index) {
-        var x = 0;
-        var opacity = 1;
-        if (elapsed < HOLD_END) {
-          var risen = Math.max(0, Math.min(1, (elapsed - index * 26) / 680));
-          var easeIn = pingEase(risen);
-          opacity = easeIn;
-          x = (1 - easeIn) * 14;
-        } else {
-          var blown = Math.max(0, Math.min(1, (elapsed - HOLD_END - index * 18) / 860));
-          var easeOut = pingEase(blown);
-          opacity = 1 - easeOut;
-          x = -easeOut * (34 + index * 0.45);
-        }
-        ch.style.opacity = String(opacity);
-        ch.style.transform = "translate3d(" + x.toFixed(2) + "px, 0, 0)";
+        var breath = 0.46 + 0.54 * (0.5 + 0.5 * Math.sin((elapsed / 2800) * Math.PI * 2 - index * 0.34));
+        var wave = gust(elapsed, arrive + index * 28);
+        ch.style.opacity = String(rise * breath);
+        ch.style.transform = "translate3d(" + (-wave * (20 + index * 0.28)).toFixed(2) + "px, " + (wave * -3.5).toFixed(2) + "px, 0)";
       });
-      var veilU = elapsed <= HOLD_END ? 0 : Math.max(0, Math.min(1, (elapsed - HOLD_END) / (OUT_END - HOLD_END)));
+      var veilU = elapsed <= fadeStart ? 0 : Math.max(0, Math.min(1, (elapsed - fadeStart) / (fadeEnd - fadeStart)));
       veil.style.opacity = String(1 - pingEase(veilU));
-      if (elapsed >= OUT_END) {
+      if (elapsed >= fadeEnd) {
         openPage();
         window.removeEventListener("keydown", onKey);
       }
     }
 
-    var windDone = true;
+    var windDone = elapsed > fadeEnd;
     fields.forEach(function (field) {
-      var start = HOLD_END + field.delay * 0.4;
-      var u = Math.max(0, Math.min(1, (elapsed - start) / 2800));
-      var back0 = pingEase(0.5);
-      var back = (pingEase(0.5 + u * 0.5) - back0) / (1 - back0);
-      if (back < 1) windDone = false;
-      var x = -field.amp * (1 - back);
-      field.el.style.transform = "translate3d(" + x.toFixed(2) + "px, " + (x * -0.14).toFixed(2) + "px, 0)";
+      var wave = gust(elapsed, field.hit);
+      if (wave > 0.01) windDone = false;
+      var x = -wave * field.amp;
+      field.el.style.transform = x ? "translate3d(" + x.toFixed(2) + "px, " + (x * -0.16).toFixed(2) + "px, 0)" : "";
     });
 
     if (opened && windDone) {
@@ -290,7 +308,6 @@ function startRadar() {
   var ctx = canvas.getContext("2d");
   var period = PING_PERIOD;
   var sweep = PING_SWEEP;
-  var started = 0;
   var cycle = -1;
   var target = null;
   var lit = false;
@@ -411,8 +428,7 @@ function startRadar() {
   }
 
   function frame(now) {
-    if (!started) started = now;
-    var elapsed = now - started;
+    var elapsed = pingClock(now);
     var n = Math.floor(elapsed / period);
     var t = (elapsed % period) / period;
     var u = Math.min(t / sweep, 1);

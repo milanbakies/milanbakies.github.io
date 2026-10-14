@@ -1,9 +1,10 @@
 /* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
 var PING_PERIOD = 22000;
 var PING_SWEEP = 0.62;
-var FADE_START = 3000;
-var FADE_DUR = 2000;
-var PING_SHIFT = FADE_START + FADE_DUR / 2 - (PING_PERIOD * PING_SWEEP) / 2;
+var INTRO_SWEEP = 3400;
+var INTRO_GAP = 600;
+var PAGE_PING = INTRO_SWEEP + INTRO_GAP;
+var FADE_DUR = 2200;
 
 (function () {
   var chooser = document.querySelector(".chooser");
@@ -149,6 +150,26 @@ function pingEase(u) {
   return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
 }
 
+function pingGlide(u) {
+  var s = Math.sin(u * Math.PI);
+  return s * s * (3 - 2 * s);
+}
+
+function pingState(elapsed) {
+  var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
+  if (elapsed < INTRO_SWEEP) {
+    var u0 = elapsed / INTRO_SWEEP;
+    return { n: 0, radius: pingEase(u0) * reach, alpha: Math.sin(u0 * Math.PI) * 0.75, u: u0, reach: reach };
+  }
+  if (elapsed < PAGE_PING) return { n: 0, radius: 0, alpha: 0, u: 1, reach: reach };
+  var pageElapsed = elapsed - PAGE_PING;
+  var n = Math.floor(pageElapsed / PING_PERIOD);
+  var t = (pageElapsed % PING_PERIOD) / PING_PERIOD;
+  var u = Math.min(t / PING_SWEEP, 1);
+  var alpha = t < PING_SWEEP ? Math.sin(u * Math.PI) * 0.75 : 0;
+  return { n: n + 1, radius: pingEase(u) * reach, alpha: alpha, u: u, reach: reach };
+}
+
 function pingClock(now) {
   if (!window.__pingT0) window.__pingT0 = now;
   return now - window.__pingT0;
@@ -158,6 +179,11 @@ function startIntro() {
   var veil = document.querySelector(".intro");
   var line = veil && veil.querySelector(".intro-line");
   if (!veil || !line || !document.querySelector(".stage")) return;
+
+  var bg = document.createElement("div");
+  bg.className = "intro-bg";
+  veil.insertBefore(bg, veil.firstChild);
+  veil.style.background = "transparent";
 
   var text = line.textContent;
   line.textContent = "";
@@ -226,6 +252,8 @@ function startIntro() {
   function openPage() {
     if (opened) return;
     opened = true;
+    var canvas = document.querySelector(".radar");
+    if (canvas) document.body.prepend(canvas);
     veil.remove();
     held.forEach(function (el) { el.removeAttribute("inert"); });
   }
@@ -250,20 +278,21 @@ function startIntro() {
   function frame(now) {
     if (done) return;
     var elapsed = pingClock(now);
-    var rise = Math.max(0, Math.min(1, elapsed / 800));
-    var p = elapsed <= FADE_START ? 0 : Math.max(0, Math.min(1, (elapsed - FADE_START) / FADE_DUR));
-    var swoosh = Math.sin(p * Math.PI);
+    var rise = Math.max(0, Math.min(1, elapsed / 900));
+    var p = elapsed <= PAGE_PING ? 0 : Math.max(0, Math.min(1, (elapsed - PAGE_PING) / FADE_DUR));
+    var veilFade = 1 - pingEase(p);
+    var state = pingState(elapsed);
 
     if (!opened) {
       chars.forEach(function (ch, index) {
-        var wave = 0.5 + 0.5 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
-        var breath = 0.86 + 0.14 * wave;
-        ch.style.opacity = String(rise * breath);
-        ch.style.color = "#d2ff4a";
-        ch.style.textShadow = "0 0 " + (4 + wave * 4).toFixed(1) + "px rgba(243, 240, 232, " + (0.2 + wave * 0.14).toFixed(2) + "), 0 0 " + (10 + wave * 7).toFixed(1) + "px rgba(210, 255, 74, " + (0.2 + wave * 0.16).toFixed(2) + ")";
-        ch.style.transform = "translate3d(" + (-swoosh * 4).toFixed(2) + "px, " + (swoosh * -1).toFixed(2) + "px, 0)";
+        var wave = 0.5 + 0.5 * Math.sin((elapsed / 4200) * Math.PI * 2 - index * 0.22);
+        var breath = 0.9 + 0.1 * wave;
+        ch.style.opacity = String(rise * breath * veilFade);
+        ch.style.color = "#f3f0e8";
+        ch.style.textShadow = "0 0 " + (3 + wave * 2).toFixed(1) + "px rgba(243, 240, 232, " + (0.14 + wave * 0.08).toFixed(2) + "), 0 0 " + (8 + wave * 4).toFixed(1) + "px rgba(210, 255, 74, " + (0.08 + wave * 0.07).toFixed(2) + ")";
+        ch.style.transform = "";
       });
-      veil.style.opacity = String(1 - pingEase(p));
+      bg.style.opacity = String(veilFade);
       if (p >= 1) {
         openPage();
         window.removeEventListener("keydown", onKey);
@@ -271,29 +300,20 @@ function startIntro() {
     }
 
     if (elapsed > 400) readyFields();
-    var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
-    var pingElapsed = elapsed - PING_SHIFT;
     var sweepMs = PING_PERIOD * PING_SWEEP;
-    var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
-    var radius = pingEase(pingU) * reach;
-    var edge = Math.min(pingU, 1 - pingU);
-    var speed = (4 * Math.max(edge, 0.15)) * reach / sweepMs;
-    var carry = Math.max(48, speed * 780);
+    var edge = Math.min(state.u, 1 - state.u);
+    var speed = (4 * Math.max(edge, 0.18)) * state.reach / sweepMs;
+    var carry = Math.max(64, speed * 1100);
     fields.forEach(function (field) {
-      var passed = radius - field.dist;
+      var passed = state.n < 1 ? -1 : state.radius - field.dist;
       var lift = 0;
-      if (passed >= 0 && passed < carry) {
-        var u = passed / carry;
-        if (u < 0.34) lift = Math.sin((u / 0.34) * Math.PI * 0.5);
-        else if (u < 0.6) lift = 1;
-        else lift = Math.cos(((u - 0.6) / 0.4) * Math.PI * 0.5);
-      }
+      if (passed >= 0 && passed < carry) lift = pingGlide(passed / carry);
       var x = lift * field.amp;
       var y = lift * field.amp * -0.35;
       field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 
-    if (pingElapsed > sweepMs + 800) {
+    if (elapsed > PAGE_PING + sweepMs + 1200) {
       done = true;
       if (!opened) openPage();
       settle();
@@ -309,10 +329,10 @@ function startRadar() {
   var canvas = document.createElement("canvas");
   canvas.className = "radar";
   canvas.setAttribute("aria-hidden", "true");
-  document.body.prepend(canvas);
+  var veil = document.querySelector(".intro");
+  if (veil) veil.insertBefore(canvas, veil.firstChild);
+  else document.body.prepend(canvas);
   var ctx = canvas.getContext("2d");
-  var period = PING_PERIOD;
-  var sweep = PING_SWEEP;
   var cycle = -1;
   var target = null;
   var lit = false;
@@ -433,14 +453,10 @@ function startRadar() {
   }
 
   function frame(now) {
-    var elapsed = pingClock(now) - PING_SHIFT;
-    var n = Math.floor(elapsed / period);
-    var t = (elapsed % period) / period;
-    var u = Math.min(t / sweep, 1);
-    var eased = pingEase(u);
-    var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
-    var radius = eased * reach;
-    var alpha = t < sweep ? Math.sin(u * Math.PI) * 0.75 : 0;
+    var state = pingState(pingClock(now));
+    var n = state.n;
+    var radius = state.radius;
+    var alpha = state.alpha;
     if (n !== cycle) {
       cycle = n;
       lit = false;

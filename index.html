@@ -50,7 +50,7 @@
   }
   </script>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="stylesheet" href="styles.css?v=14">
   <style>
     .intro { display: none; }
     .js .intro {
@@ -67,13 +67,26 @@
       margin: 0;
       padding: 12vh 1.6rem;
       background: #07131c;
-      color: #d2ff4a;
+      color: #f3f0e8;
       overflow: hidden;
       pointer-events: none;
     }
+    .intro-bg {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 0;
+      background: #07131c;
+    }
+    .intro .radar { position: absolute; z-index: 1; }
     .intro-line {
+      position: relative;
+      z-index: 2;
       max-width: 11em;
       margin: 0;
+      color: #f3f0e8;
       text-align: center;
       font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
       font-size: clamp(2.15rem, 1.15rem + 3.4vw, 4.2rem);
@@ -85,8 +98,8 @@
     }
     .intro-word { display: inline-block; white-space: nowrap; }
     .intro-ch {
-      color: #d2ff4a;
-      text-shadow: 0 0 6px rgba(243, 240, 232, 0.28), 0 0 14px rgba(210, 255, 74, 0.3);
+      color: #f3f0e8;
+      text-shadow: 0 0 4px rgba(243, 240, 232, 0.18), 0 0 10px rgba(210, 255, 74, 0.14);
     }
     @media (prefers-reduced-motion: reduce) {
       .js .intro { display: none !important; }
@@ -227,6 +240,6 @@
       </nav>
     </div>
   </footer>
-  <script src="site.js?v=13"></script>
+  <script src="site.js?v=14"></script>
 </body>
 </html>

@@ -142,7 +142,8 @@ function startRadar() {
   canvas.setAttribute("aria-hidden", "true");
   document.body.prepend(canvas);
   var ctx = canvas.getContext("2d");
-  var period = 9800;
+  var period = 22000;
+  var sweep = 0.62;
   var cycle = -1;
   var target = null;
   var lit = false;
@@ -174,7 +175,9 @@ function startRadar() {
     var pattern = /\p{L}[\p{L}'’-]{4,}/gu;
     while ((node = walker.nextNode())) {
       var parent = node.parentElement;
-      if (!parent || parent.closest("script, style, .radar")) continue;
+      if (!parent || parent.closest("script, style, .radar, .ask-q, .choice")) continue;
+      var display = window.getComputedStyle(parent).display;
+      if (display === "flex" || display === "inline-flex" || display === "grid" || display === "inline-grid") continue;
       var panel = parent.closest(".panel");
       if (panel && !panel.classList.contains("is-open")) continue;
       var ask = parent.closest(".ask");
@@ -263,10 +266,11 @@ function startRadar() {
   function frame(now) {
     var n = Math.floor(now / period);
     var t = (now % period) / period;
-    var eased = 1 - Math.pow(1 - t, 1.65);
+    var u = Math.min(t / sweep, 1);
+    var eased = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
     var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
     var radius = eased * reach;
-    var alpha = Math.sin(Math.min(t, 1) * Math.PI) * 0.85;
+    var alpha = t < sweep ? Math.sin(u * Math.PI) * 0.75 : 0;
     if (n !== cycle) {
       cycle = n;
       lit = false;
@@ -280,7 +284,7 @@ function startRadar() {
       target.span.classList.add("is-lit");
       fadeTimer = window.setTimeout(function () {
         if (target && target.span) target.span.classList.remove("is-lit");
-      }, 1700);
+      }, 2600);
     }
     window.requestAnimationFrame(frame);
   }

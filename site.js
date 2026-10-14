@@ -212,9 +212,8 @@ function startIntro() {
       var fromStill = Math.hypot(cx - ax, cy - ay);
       fields.push({
         el: el,
-        nx: dx / len,
-        ny: dy / len,
-        amp: 8 + Math.min(18, fromStill / 22)
+        dist: len,
+        amp: 28 + Math.min(16, fromStill / 36)
       });
     });
   }
@@ -273,14 +272,28 @@ function startIntro() {
     }
 
     if (elapsed > 400) readyFields();
+    var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
+    var pingElapsed = elapsed - PING_SHIFT;
+    var sweepMs = PING_PERIOD * PING_SWEEP;
+    var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
+    var radius = pingEase(pingU) * reach;
+    var band = Math.max(170, reach * 0.14);
     fields.forEach(function (field) {
-      var x = field.nx * swoosh * field.amp;
-      var y = field.ny * swoosh * field.amp;
-      field.el.style.transform = swoosh ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
+      var passed = radius - field.dist;
+      var lift = 0;
+      if (passed >= -band && passed < 0) {
+        lift = Math.sin((1 + passed / band) * Math.PI * 0.5);
+      } else if (passed >= 0) {
+        lift = Math.cos(Math.min(1, passed / (band * 2.6)) * Math.PI * 0.5);
+      }
+      var x = lift * field.amp * 0.84;
+      var y = lift * field.amp * -0.62;
+      field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 
-    if (p >= 1) {
+    if (pingElapsed > sweepMs + 800) {
       done = true;
+      if (!opened) openPage();
       settle();
       return;
     }

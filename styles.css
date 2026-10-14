@@ -89,6 +89,8 @@ body > footer {
 .intro-ch {
   display: inline-block;
   font-style: normal;
+  color: var(--ink);
+  text-shadow: 0 0 16px rgba(210, 255, 74, 0.72), 0 0 34px rgba(210, 255, 74, 0.28);
   will-change: transform, opacity;
 }
 

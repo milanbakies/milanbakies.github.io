@@ -1,7 +1,7 @@
 /* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
 var PING_PERIOD = 22000;
 var PING_SWEEP = 0.62;
-var FADE_START = 4000;
+var FADE_START = 3000;
 var FADE_DUR = 2000;
 var PING_SHIFT = FADE_START + FADE_DUR / 2 - (PING_PERIOD * PING_SWEEP) / 2;
 
@@ -213,7 +213,7 @@ function startIntro() {
       fields.push({
         el: el,
         dist: len,
-        amp: 28 + Math.min(16, fromStill / 36)
+        amp: 8 + Math.min(2, fromStill / 220)
       });
     });
   }
@@ -260,9 +260,12 @@ function startIntro() {
 
     if (!opened) {
       chars.forEach(function (ch, index) {
-        var breath = 0.72 + 0.28 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
+        var wave = 0.5 + 0.5 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
+        var breath = 0.86 + 0.14 * wave;
         ch.style.opacity = String(rise * breath);
-        ch.style.transform = "translate3d(" + (-swoosh * 16).toFixed(2) + "px, " + (swoosh * -3).toFixed(2) + "px, 0)";
+        ch.style.color = "#f3f0e8";
+        ch.style.textShadow = "0 0 " + (10 + wave * 14).toFixed(1) + "px rgba(210, 255, 74, " + (0.45 + wave * 0.5).toFixed(2) + "), 0 0 " + (28 + wave * 22).toFixed(1) + "px rgba(210, 255, 74, " + (0.16 + wave * 0.28).toFixed(2) + ")";
+        ch.style.transform = "translate3d(" + (-swoosh * 4).toFixed(2) + "px, " + (swoosh * -1).toFixed(2) + "px, 0)";
       });
       veil.style.opacity = String(1 - pingEase(p));
       if (p >= 1) {
@@ -277,17 +280,18 @@ function startIntro() {
     var sweepMs = PING_PERIOD * PING_SWEEP;
     var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
     var radius = pingEase(pingU) * reach;
-    var band = Math.max(170, reach * 0.14);
+    var band = Math.max(78, reach * 0.06);
+    var tail = band * 0.42;
     fields.forEach(function (field) {
       var passed = radius - field.dist;
       var lift = 0;
       if (passed >= -band && passed < 0) {
         lift = Math.sin((1 + passed / band) * Math.PI * 0.5);
-      } else if (passed >= 0) {
-        lift = Math.cos(Math.min(1, passed / (band * 2.6)) * Math.PI * 0.5);
+      } else if (passed >= 0 && passed < tail) {
+        lift = Math.cos((passed / tail) * Math.PI * 0.5);
       }
-      var x = lift * field.amp * 0.84;
-      var y = lift * field.amp * -0.62;
+      var x = lift * field.amp * 0.78;
+      var y = lift * field.amp * -0.36;
       field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 

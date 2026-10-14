@@ -66,7 +66,7 @@ body > footer {
 .intro-line {
   max-width: 11em;
   margin: 0;
-  color: var(--ink);
+  color: var(--lime);
   font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
   font-size: clamp(2.15rem, 1.15rem + 3.4vw, 4.2rem);
   font-weight: 400;
@@ -89,8 +89,8 @@ body > footer {
 .intro-ch {
   display: inline-block;
   font-style: normal;
-  color: var(--ink);
-  text-shadow: 0 0 16px rgba(210, 255, 74, 0.72), 0 0 34px rgba(210, 255, 74, 0.28);
+  color: var(--lime);
+  text-shadow: 0 0 10px rgba(210, 255, 74, 0.75), 0 0 22px rgba(210, 255, 74, 0.28);
   will-change: transform, opacity;
 }
 

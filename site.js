@@ -196,9 +196,6 @@ function startIntro() {
     if (fieldsReady) return;
     fieldsReady = true;
     var still = document.querySelector(".panel.is-open .panel-title");
-    var anchor = still && still.getBoundingClientRect();
-    var ax = anchor ? anchor.left + anchor.width / 2 : window.innerWidth / 2;
-    var ay = anchor ? anchor.top + anchor.height / 2 : window.innerHeight / 2;
     var height = window.innerHeight;
     document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
       if (still && (el === still || still.contains(el))) return;
@@ -209,11 +206,10 @@ function startIntro() {
       var dx = cx;
       var dy = cy - height;
       var len = Math.hypot(dx, dy) || 1;
-      var fromStill = Math.hypot(cx - ax, cy - ay);
       fields.push({
         el: el,
         dist: len,
-        amp: 8 + Math.min(2, fromStill / 220)
+        amp: 2.4
       });
     });
   }
@@ -263,8 +259,8 @@ function startIntro() {
         var wave = 0.5 + 0.5 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
         var breath = 0.86 + 0.14 * wave;
         ch.style.opacity = String(rise * breath);
-        ch.style.color = "#f3f0e8";
-        ch.style.textShadow = "0 0 " + (10 + wave * 14).toFixed(1) + "px rgba(210, 255, 74, " + (0.45 + wave * 0.5).toFixed(2) + "), 0 0 " + (28 + wave * 22).toFixed(1) + "px rgba(210, 255, 74, " + (0.16 + wave * 0.28).toFixed(2) + ")";
+        ch.style.color = "#d2ff4a";
+        ch.style.textShadow = "0 0 " + (6 + wave * 8).toFixed(1) + "px rgba(210, 255, 74, " + (0.55 + wave * 0.4).toFixed(2) + "), 0 0 " + (16 + wave * 14).toFixed(1) + "px rgba(210, 255, 74, " + (0.18 + wave * 0.22).toFixed(2) + ")";
         ch.style.transform = "translate3d(" + (-swoosh * 4).toFixed(2) + "px, " + (swoosh * -1).toFixed(2) + "px, 0)";
       });
       veil.style.opacity = String(1 - pingEase(p));
@@ -280,18 +276,14 @@ function startIntro() {
     var sweepMs = PING_PERIOD * PING_SWEEP;
     var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
     var radius = pingEase(pingU) * reach;
-    var band = Math.max(78, reach * 0.06);
-    var tail = band * 0.42;
+    var half = 22;
     fields.forEach(function (field) {
       var passed = radius - field.dist;
+      var along = passed / half;
       var lift = 0;
-      if (passed >= -band && passed < 0) {
-        lift = Math.sin((1 + passed / band) * Math.PI * 0.5);
-      } else if (passed >= 0 && passed < tail) {
-        lift = Math.cos((passed / tail) * Math.PI * 0.5);
-      }
-      var x = lift * field.amp * 0.78;
-      var y = lift * field.amp * -0.36;
+      if (along > -1 && along < 1) lift = 0.5 + 0.5 * Math.cos(along * Math.PI);
+      var x = lift * field.amp;
+      var y = lift * field.amp * -0.4;
       field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 

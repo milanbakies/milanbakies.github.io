@@ -1,4 +1,8 @@
 /* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
+var PING_PERIOD = 22000;
+var PING_SWEEP = 0.62;
+var PING_DELAY = 4000;
+
 (function () {
   var chooser = document.querySelector(".chooser");
   var stage = document.querySelector(".stage");
@@ -138,10 +142,6 @@
     startRadar();
   }
 })();
-
-var PING_PERIOD = 22000;
-var PING_SWEEP = 0.62;
-var PING_DELAY = 4000;
 
 function pingEase(u) {
   return u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;

@@ -276,14 +276,13 @@ function startIntro() {
     var sweepMs = PING_PERIOD * PING_SWEEP;
     var pingU = Math.max(0, Math.min(1, pingElapsed / sweepMs));
     var radius = pingEase(pingU) * reach;
-    var half = 22;
+    var tail = 14;
     fields.forEach(function (field) {
       var passed = radius - field.dist;
-      var along = passed / half;
       var lift = 0;
-      if (along > -1 && along < 1) lift = 0.5 + 0.5 * Math.cos(along * Math.PI);
+      if (passed >= 0 && passed < tail) lift = Math.cos((passed / tail) * Math.PI * 0.5);
       var x = lift * field.amp;
-      var y = lift * field.amp * -0.4;
+      var y = lift * field.amp * -0.35;
       field.el.style.transform = lift ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 

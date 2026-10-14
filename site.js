@@ -1,7 +1,9 @@
 /* Io. Iucundum est te adesse. Pervenisti. Ecce crustulum. */
 var PING_PERIOD = 22000;
 var PING_SWEEP = 0.62;
-var PING_DELAY = 4000;
+var FADE_START = 4000;
+var FADE_DUR = 2000;
+var PING_SHIFT = FADE_START + FADE_DUR / 2 - (PING_PERIOD * PING_SWEEP) / 2;
 
 (function () {
   var chooser = document.querySelector(".chooser");
@@ -187,43 +189,42 @@ function startIntro() {
     held.push(el);
   });
 
-  var cards = [];
-  var cardsReady = false;
+  var fields = [];
+  var fieldsReady = false;
 
-  function readyCards() {
-    if (cardsReady) return;
-    cardsReady = true;
-    var midX = window.innerWidth / 2;
-    var midY = window.innerHeight / 2;
-    var center = null;
-    var best = Infinity;
-    document.querySelectorAll(".choice").forEach(function (el) {
+  function readyFields() {
+    if (fieldsReady) return;
+    fieldsReady = true;
+    var still = document.querySelector(".panel.is-open .panel-title");
+    var anchor = still && still.getBoundingClientRect();
+    var ax = anchor ? anchor.left + anchor.width / 2 : window.innerWidth / 2;
+    var ay = anchor ? anchor.top + anchor.height / 2 : window.innerHeight / 2;
+    var height = window.innerHeight;
+    document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
+      if (still && (el === still || still.contains(el))) return;
       var rect = el.getBoundingClientRect();
-      var dist = Math.hypot(rect.left + rect.width / 2 - midX, rect.top + rect.height / 2 - midY);
-      if (dist < best) {
-        best = dist;
-        center = el;
-      }
-    });
-    document.querySelectorAll(".choice").forEach(function (el) {
-      if (el === center) return;
-      var rect = el.getBoundingClientRect();
-      cards.push({
+      if (rect.width < 2 && rect.height < 2) return;
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      var dx = cx;
+      var dy = cy - height;
+      var len = Math.hypot(dx, dy) || 1;
+      var fromStill = Math.hypot(cx - ax, cy - ay);
+      fields.push({
         el: el,
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
+        nx: dx / len,
+        ny: dy / len,
+        amp: 8 + Math.min(18, fromStill / 22)
       });
     });
   }
 
-  var WAVE = PING_DELAY;
-  var FADE = PING_DELAY + 1800;
   var opened = false;
   var done = false;
 
   function settle() {
-    cards.forEach(function (card) {
-      card.el.style.transform = "";
+    fields.forEach(function (field) {
+      field.el.style.transform = "";
     });
   }
 
@@ -255,41 +256,30 @@ function startIntro() {
     if (done) return;
     var elapsed = pingClock(now);
     var rise = Math.max(0, Math.min(1, elapsed / 800));
-    var sweepMs = PING_PERIOD * PING_SWEEP;
-    var travel = Math.max(0, elapsed - PING_DELAY);
-    var u = Math.min(1, travel / sweepMs);
-    var radius = pingEase(u) * (Math.hypot(window.innerWidth, window.innerHeight) + 24);
+    var p = elapsed <= FADE_START ? 0 : Math.max(0, Math.min(1, (elapsed - FADE_START) / FADE_DUR));
+    var swoosh = Math.sin(p * Math.PI);
 
     if (!opened) {
       chars.forEach(function (ch, index) {
         var breath = 0.72 + 0.28 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
-        var gust = elapsed < WAVE ? 0 : pingEase(Math.max(0, Math.min(1, (elapsed - WAVE - index * 16) / 900)));
         ch.style.opacity = String(rise * breath);
-        ch.style.transform = "translate3d(" + (-gust * 22).toFixed(2) + "px, " + (gust * -3).toFixed(2) + "px, 0)";
+        ch.style.transform = "translate3d(" + (-swoosh * 16).toFixed(2) + "px, " + (swoosh * -3).toFixed(2) + "px, 0)";
       });
-      var veilU = elapsed <= WAVE ? 0 : Math.max(0, Math.min(1, (elapsed - WAVE) / (FADE - WAVE)));
-      veil.style.opacity = String(1 - pingEase(veilU));
-      if (elapsed >= FADE) {
+      veil.style.opacity = String(1 - pingEase(p));
+      if (p >= 1) {
         openPage();
         window.removeEventListener("keydown", onKey);
       }
     }
 
-    if (elapsed > 700) readyCards();
-    var height = window.innerHeight;
-    cards.forEach(function (card) {
-      var dx = card.x;
-      var dy = card.y - height;
-      var dist = Math.hypot(dx, dy) || 1;
-      var band = Math.max(90, radius * 0.1);
-      var gap = Math.abs(radius - dist);
-      var push = travel > 0 && gap < band ? Math.cos((gap / band) * Math.PI * 0.5) : 0;
-      var x = (dx / dist) * push * 22;
-      var y = (dy / dist) * push * 22;
-      card.el.style.transform = push ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
+    if (elapsed > 400) readyFields();
+    fields.forEach(function (field) {
+      var x = field.nx * swoosh * field.amp;
+      var y = field.ny * swoosh * field.amp;
+      field.el.style.transform = swoosh ? "translate3d(" + x.toFixed(2) + "px, " + y.toFixed(2) + "px, 0)" : "";
     });
 
-    if (elapsed >= PING_DELAY + sweepMs) {
+    if (p >= 1) {
       done = true;
       settle();
       return;
@@ -428,12 +418,7 @@ function startRadar() {
   }
 
   function frame(now) {
-    var clock = pingClock(now);
-    if (clock < PING_DELAY) {
-      window.requestAnimationFrame(frame);
-      return;
-    }
-    var elapsed = clock - PING_DELAY;
+    var elapsed = pingClock(now) - PING_SHIFT;
     var n = Math.floor(elapsed / period);
     var t = (elapsed % period) / period;
     var u = Math.min(t / sweep, 1);

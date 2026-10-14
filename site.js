@@ -132,4 +132,160 @@
       centerTab(tabs[index]);
     });
   });
+
+  if (!reduce && document.querySelector("main")) startRadar();
 })();
+
+function startRadar() {
+  var canvas = document.createElement("canvas");
+  canvas.className = "radar";
+  canvas.setAttribute("aria-hidden", "true");
+  document.body.prepend(canvas);
+  var ctx = canvas.getContext("2d");
+  var period = 9800;
+  var cycle = -1;
+  var target = null;
+  var lit = false;
+  var fadeTimer = 0;
+  var dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
+    canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+  }
+
+  function clearWord() {
+    var old = document.querySelector(".ping-word");
+    if (!old || !old.parentNode) return;
+    var parent = old.parentNode;
+    while (old.firstChild) parent.insertBefore(old.firstChild, old);
+    parent.removeChild(old);
+    parent.normalize();
+  }
+
+  function pickWord() {
+    clearWord();
+    var root = document.querySelector("main");
+    if (!root) return null;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var found = [];
+    var node;
+    var pattern = /\p{L}[\p{L}'’-]{4,}/gu;
+    while ((node = walker.nextNode())) {
+      var parent = node.parentElement;
+      if (!parent || parent.closest("script, style, .radar")) continue;
+      var panel = parent.closest(".panel");
+      if (panel && !panel.classList.contains("is-open")) continue;
+      var ask = parent.closest(".ask");
+      if (ask && !ask.classList.contains("is-open") && parent.closest(".ask-a")) continue;
+      var text = node.textContent;
+      if (!text || !pattern.test(text)) {
+        pattern.lastIndex = 0;
+        continue;
+      }
+      pattern.lastIndex = 0;
+      var match;
+      while ((match = pattern.exec(text))) {
+        var range = document.createRange();
+        range.setStart(node, match.index);
+        range.setEnd(node, match.index + match[0].length);
+        var rect = range.getBoundingClientRect();
+        if (rect.width < 2 || rect.height < 2) continue;
+        if (rect.bottom < 8 || rect.top > window.innerHeight - 8) continue;
+        if (rect.right < 8 || rect.left > window.innerWidth - 8) continue;
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        found.push({
+          node: node,
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0],
+          dist: Math.hypot(cx, cy - window.innerHeight)
+        });
+      }
+    }
+    if (!found.length) return null;
+    var last = target && target.text;
+    var pool = found.filter(function (word) { return word.text !== last; });
+    if (!pool.length) pool = found;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function arm(word) {
+    try {
+      var range = document.createRange();
+      range.setStart(word.node, word.start);
+      range.setEnd(word.node, word.end);
+      var span = document.createElement("span");
+      span.className = "ping-word";
+      range.surroundContents(span);
+      word.span = span;
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function draw(radius, alpha) {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (alpha <= 0.01 || radius < 2) return;
+    var ox = 0;
+    var oy = h;
+    var band = Math.max(18, radius * 0.045);
+    var grad = ctx.createRadialGradient(ox, oy, Math.max(0, radius - band), ox, oy, radius + 2);
+    grad.addColorStop(0, "rgba(62, 190, 202, 0)");
+    grad.addColorStop(0.62, "rgba(62, 190, 202, " + (alpha * 0.05) + ")");
+    grad.addColorStop(0.86, "rgba(143, 212, 220, " + (alpha * 0.16) + ")");
+    grad.addColorStop(1, "rgba(210, 255, 74, 0)");
+    ctx.beginPath();
+    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(ox, oy, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(143, 212, 220, " + (alpha * 0.42) + ")";
+    ctx.lineWidth = 1.15;
+    ctx.stroke();
+    var ghost = radius * 0.7;
+    if (ghost > 12) {
+      ctx.beginPath();
+      ctx.arc(ox, oy, ghost, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(62, 190, 202, " + (alpha * 0.16) + ")";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  }
+
+  function frame(now) {
+    var n = Math.floor(now / period);
+    var t = (now % period) / period;
+    var eased = 1 - Math.pow(1 - t, 1.65);
+    var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
+    var radius = eased * reach;
+    var alpha = Math.sin(Math.min(t, 1) * Math.PI) * 0.85;
+    if (n !== cycle) {
+      cycle = n;
+      lit = false;
+      window.clearTimeout(fadeTimer);
+      target = pickWord();
+      if (target && !arm(target)) target = null;
+    }
+    draw(radius, alpha);
+    if (target && target.span && !lit && radius >= target.dist) {
+      lit = true;
+      target.span.classList.add("is-lit");
+      fadeTimer = window.setTimeout(function () {
+        if (target && target.span) target.span.classList.remove("is-lit");
+      }, 1700);
+    }
+    window.requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+  window.requestAnimationFrame(frame);
+}

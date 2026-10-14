@@ -151,12 +151,6 @@ function pingClock(now) {
   return now - window.__pingT0;
 }
 
-function timeForRadius(dist, reach) {
-  var d = Math.max(0, Math.min(0.999, dist / reach));
-  var u = d <= 0.5 ? Math.sqrt(d / 2) : 1 - Math.sqrt((1 - d) / 2);
-  return u * PING_PERIOD * PING_SWEEP;
-}
-
 function startIntro() {
   var veil = document.querySelector(".intro");
   var line = veil && veil.querySelector(".intro-line");
@@ -192,8 +186,6 @@ function startIntro() {
     held.push(el);
   });
 
-  var reach = Math.hypot(window.innerWidth, window.innerHeight) + 24;
-  var originY = window.innerHeight;
   var fields = [];
   var anchor = document.querySelector(".panel.is-open .panel-title");
   if (anchor) {
@@ -203,22 +195,17 @@ function startIntro() {
     document.querySelectorAll(".brand, .lang, .choice, .pager, .panel.is-open .kicker, .panel.is-open .panel-title, .panel.is-open .lead, .panel.is-open .label, .panel.is-open .ask, .panel.is-open .quiet, .contact p, .mail, .foot").forEach(function (el) {
       var rect = el.getBoundingClientRect();
       if (rect.width < 2 && rect.height < 2) return;
-      var cx = rect.left + rect.width / 2;
-      var cy = rect.top + rect.height / 2;
-      var fromPing = Math.hypot(cx, originY - cy);
-      var fromTitle = Math.hypot(cx - ax, cy - ay);
+      var fromTitle = Math.hypot(rect.left + rect.width / 2 - ax, rect.top + rect.height / 2 - ay);
       fields.push({
         el: el,
-        amp: 2.2 + Math.min(9, fromTitle / 110),
-        hit: timeForRadius(fromPing, reach)
+        amp: 12 + Math.min(28, fromTitle / 18),
+        delay: Math.min(380, fromTitle * 0.32)
       });
     });
   }
 
-  var titleDist = Math.hypot(window.innerWidth * 0.5, window.innerHeight * 0.5);
-  var arrive = timeForRadius(titleDist, reach);
-  var fadeStart = Math.max(2400, arrive - 800);
-  var fadeEnd = fadeStart + 1700;
+  var WAVE = 1900;
+  var FADE = 3600;
   var opened = false;
   var done = false;
 
@@ -242,7 +229,6 @@ function startIntro() {
     settle();
   }
 
-  veil.addEventListener("click", finish);
   window.addEventListener("keydown", onKey);
 
   function onKey(event) {
@@ -253,40 +239,38 @@ function startIntro() {
     if (event.key === "Escape") finish();
   }
 
-  function gust(elapsed, hit) {
-    var span = 980;
-    var delta = elapsed - hit;
-    if (delta < -span || delta > span) return 0;
-    if (delta < 0) return Math.sin((1 + delta / span) * Math.PI * 0.5);
-    return Math.cos((delta / span) * Math.PI * 0.5);
+  function swing(elapsed, delay) {
+    var u = Math.max(0, Math.min(1, (elapsed - WAVE - delay) / 2100));
+    var back0 = pingEase(0.5);
+    return 1 - (pingEase(0.5 + u * 0.5) - back0) / (1 - back0);
   }
 
   function frame(now) {
     if (done) return;
     var elapsed = pingClock(now);
-    var rise = Math.max(0, Math.min(1, elapsed / 900));
+    var rise = Math.max(0, Math.min(1, elapsed / 800));
 
     if (!opened) {
       chars.forEach(function (ch, index) {
-        var breath = 0.46 + 0.54 * (0.5 + 0.5 * Math.sin((elapsed / 2800) * Math.PI * 2 - index * 0.34));
-        var wave = gust(elapsed, arrive + index * 28);
+        var breath = 0.72 + 0.28 * Math.sin((elapsed / 2600) * Math.PI * 2 - index * 0.28);
+        var gust = elapsed < WAVE ? 0 : pingEase(Math.max(0, Math.min(1, (elapsed - WAVE - index * 16) / 900)));
         ch.style.opacity = String(rise * breath);
-        ch.style.transform = "translate3d(" + (-wave * (20 + index * 0.28)).toFixed(2) + "px, " + (wave * -3.5).toFixed(2) + "px, 0)";
+        ch.style.transform = "translate3d(" + (-gust * 26).toFixed(2) + "px, " + (gust * -4).toFixed(2) + "px, 0)";
       });
-      var veilU = elapsed <= fadeStart ? 0 : Math.max(0, Math.min(1, (elapsed - fadeStart) / (fadeEnd - fadeStart)));
+      var veilU = elapsed <= WAVE ? 0 : Math.max(0, Math.min(1, (elapsed - WAVE) / (FADE - WAVE)));
       veil.style.opacity = String(1 - pingEase(veilU));
-      if (elapsed >= fadeEnd) {
+      if (elapsed >= FADE) {
         openPage();
         window.removeEventListener("keydown", onKey);
       }
     }
 
-    var windDone = elapsed > fadeEnd;
+    var windDone = true;
     fields.forEach(function (field) {
-      var wave = gust(elapsed, field.hit);
-      if (wave > 0.01) windDone = false;
-      var x = -wave * field.amp;
-      field.el.style.transform = x ? "translate3d(" + x.toFixed(2) + "px, " + (x * -0.16).toFixed(2) + "px, 0)" : "";
+      var left = swing(elapsed, field.delay);
+      if (left > 0.02) windDone = false;
+      var x = -left * field.amp;
+      field.el.style.transform = "translate3d(" + x.toFixed(2) + "px, " + (x * -0.18).toFixed(2) + "px, 0)";
     });
 
     if (opened && windDone) {

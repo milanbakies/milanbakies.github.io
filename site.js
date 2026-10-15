@@ -172,7 +172,6 @@ function startRadar() {
     var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     var found = [];
     var node;
-    var pattern = /\p{L}[\p{L}'’-]{4,}/gu;
     while ((node = walker.nextNode())) {
       var parent = node.parentElement;
       if (!parent || parent.closest("script, style, .radar, .ask-q, .choice")) continue;
@@ -183,7 +182,11 @@ function startRadar() {
       var ask = parent.closest(".ask");
       if (ask && !ask.classList.contains("is-open") && parent.closest(".ask-a")) continue;
       var text = node.textContent;
-      if (!text || !pattern.test(text)) {
+      if (!text) continue;
+      var pattern = /[\u3040-\u30ff\u3400-\u9fff]/.test(text)
+        ? /[\u3040-\u30ff\u3400-\u9fff]{2}/gu
+        : (/\p{Script=Devanagari}/u.test(text) ? /\p{Script=Devanagari}{2,8}/gu : /\p{L}[\p{L}'’-]{4,}/gu);
+      if (!pattern.test(text)) {
         pattern.lastIndex = 0;
         continue;
       }
